@@ -64,14 +64,18 @@ app.get("/", (req, res) => {
   });
 });
 
-app.post("/upload", function (req, res) {
-  console.log(req.files.foo);
-  //   <input name="foo" type="file" />
-});
 app.use("/", user);
 
 app.post("/welcome", auth, (req, res) => {
   res.status(200).send("Welcome 🙌 ");
+});
+
+app.post("/upload", function (req, res) {
+  console.log(req.files.foo);
+  //   <input name="foo" type="file" />
+});
+app.get("*", auth, (req, res) => {
+  res.status(404).json({ message: "404 page not found" });
 });
 
 // listners
