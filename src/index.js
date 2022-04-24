@@ -7,6 +7,8 @@ const rateLimit = require("express-rate-limit");
 const slowDown = require("express-slow-down");
 const fileUpload = require("express-fileupload");
 const apiKey = require("@vpriem/express-api-key-auth");
+const auth = require("./middleware/auth");
+const user = require("./routes/user");
 
 // api config
 dotenv.config();
@@ -36,21 +38,23 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
-express().use(apiKey.apiKeyAuth(["my-api-key1", "my-api-key2"])); // x-api-key
+// express().use(apiKey.apiKeyAuth(["my-api-key1", "my-api-key2"])); // x-api-key
 app.use(express.static("public"));
 
 // db config
 
-mongoose.connect(
-  process.env.MONGO_URL,
-  {
+mongoose
+  .connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  },
-  () => {
-    console.log("DB Connected");
-  }
-);
+  })
+  .then(() => {
+    console.log("Successfully connected to database");
+  })
+  .catch((error) => {
+    console.log("database connection failed. exiting now...");
+    console.error(error);
+  });
 
 // api endpoints
 
@@ -63,6 +67,11 @@ app.get("/", (req, res) => {
 app.post("/upload", function (req, res) {
   console.log(req.files.foo);
   //   <input name="foo" type="file" />
+});
+app.use("/", user);
+
+app.post("/welcome", auth, (req, res) => {
+  res.status(200).send("Welcome 🙌 ");
 });
 
 // listners
